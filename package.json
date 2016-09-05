@@ -32,7 +32,8 @@
   "homepage": "https://github.com/restlessbit/redux-api-promise-middleware#readme",
   "ava": {
     "require": [
-      "babel-register"
+      "babel-register",
+      "isomorphic-fetch"
     ]
   },
   "babel": {
@@ -68,6 +69,8 @@
     "eslint-config-standard": "^6.0.0",
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.0",
+    "fetch-mock": "^5.1.1",
+    "isomorphic-fetch": "^2.2.1",
     "redux": "^3.6.0"
   }
 }
