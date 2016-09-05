@@ -17,7 +17,7 @@ export default ({ dispatch }) => next => action => {
   })
 
   return new Promise((resolve, reject) => {
-    fetch(apiAction.endpoint).then(response => {
+    fetch(apiAction.endpoint, apiAction.fetchOptions).then(response => {
       if (!response.ok) {
         throw response
       }

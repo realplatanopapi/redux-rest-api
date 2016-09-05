@@ -156,3 +156,65 @@ test('Dispatching failure action type on failed fetch request', async t => {
     t.is(error.payload.statusText, 'Internal Server Error')
   }
 })
+
+test('Passing options to underlying fetch request', async t => {
+  const store = createTestStore({
+    types: ['PENDING', 'SUCCESS', 'FAILURE']
+  })
+
+  // Respond to fetch request with Guy Fieri
+  fetchMock.mock('http://monsterfactory.test', JSON.stringify({
+    message: 'Oh no what have you done'
+  }), {
+    method: 'POST'
+  })
+
+  const dispatchSpy = spy(store, 'dispatch')
+  const next = spy()
+
+  // Invoke middleware
+  const promise = apiMiddleware(store)(next)({
+    [API_ACTION_TYPE]: {
+      endpoint: 'http://monsterfactory.test',
+      types: ['PENDING', 'SUCCESS', 'FAILURE'],
+      fetchOptions: {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: 'Guy Fieri'
+        })
+      }
+    }
+  })
+
+  // Assert the pending action was dispatched to the store
+  t.deepEqual(dispatchSpy.firstCall.args[0], {
+    type: 'PENDING'
+  })
+
+  const result = await promise
+  // Assert the Promise resolved with the success action
+  t.deepEqual(result, {
+    type: 'SUCCESS',
+    payload: {
+      message: 'Oh no what have you done'
+    }
+  })
+
+  // Assert the success action was dispatched to the store
+  t.deepEqual(dispatchSpy.getCall(1).args[0], result)
+
+  // Assert options were passed to fetch request
+  const lastCallArgs = fetchMock.lastCall('http://monsterfactory.test')
+  t.deepEqual(lastCallArgs, ['http://monsterfactory.test', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'Guy Fieri'
+    })
+  }])
+})
