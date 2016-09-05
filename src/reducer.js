@@ -1,3 +1,5 @@
+import extend from 'object-assign'
+
 const initialState = {
   error: null,
   isPending: false,
@@ -11,7 +13,29 @@ export default function configureApiReducer ({ types } = {}) {
     throw new Error('`types` must be an array of 3 strings')
   }
 
+  const PENDING_TYPE = types[0]
+  const SUCCESS_TYPE = types[1]
+  const FAILURE_TYPE = types[2]
+
   return function apiReducer (state = initialState, { type, payload }) {
-    return state
+    switch (type) {
+      case PENDING_TYPE:
+        return extend({}, state, {
+          isPending: true
+        })
+      case SUCCESS_TYPE:
+        return extend({}, state, {
+          error: null,
+          isPending: false,
+          response: payload
+        })
+      case FAILURE_TYPE:
+        return extend({}, state, {
+          error: payload,
+          isPending: false
+        })
+      default:
+        return state
+    }
   }
 }
