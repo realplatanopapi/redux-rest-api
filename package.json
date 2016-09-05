@@ -44,8 +44,7 @@
   "ava": {
     "require": [
       "babel-register"
-    ],
-    "babel": "inherit"
+    ]
   },
   "babel": {
     "presets": [
