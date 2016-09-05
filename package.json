@@ -49,7 +49,11 @@
     }
   },
   "eslintConfig": {
-    "extends": "standard"
+    "extends": "standard",
+    "env": {
+      "browser": true,
+      "node": true
+    }
   },
   "dependencies": {
     "object-assign": "^4.1.0"
