@@ -1,4 +1,4 @@
-import { API_ACTION_TYPE } from './constants'
+import { API_ACTION_TYPE } from './'
 
 const initialState = {
   error: null,
