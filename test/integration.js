@@ -1,11 +1,15 @@
 import fetchMock from 'fetch-mock'
 import test from 'ava'
 
+import { getFakeApiEndpoint } from './helpers/api'
 import createTestStore from './helpers/create-test-store'
 
 import { API_ACTION_TYPE } from '../src'
 
-test.beforeEach(() => {
+test.beforeEach(t => {
+  // Generate fake api endpoint.
+  t.context.fakeApiEndpoint = getFakeApiEndpoint('monsterfactory')
+
   // Reset fetch mocks before every test
   fetchMock.restore()
 })
@@ -23,6 +27,8 @@ test('Initial state', t => {
 })
 
 test('API actions are converted to Promises', t => {
+  const { fakeApiEndpoint } = t.context
+
   const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
   const store = createTestStore({
     types: requestTypes
@@ -30,7 +36,7 @@ test('API actions are converted to Promises', t => {
 
   const request = store.dispatch({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://integration.test',
+      endpoint: fakeApiEndpoint,
       types: requestTypes
     }
   })
@@ -40,19 +46,21 @@ test('API actions are converted to Promises', t => {
 })
 
 test('Successful API request', async t => {
+  const { fakeApiEndpoint } = t.context
+
   const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
   const store = createTestStore({
     types: requestTypes
   })
 
-  fetchMock.mock('http://integration.test', {
+  fetchMock.mock(fakeApiEndpoint, {
     name: 'mario the ghost',
     age: 23
   })
 
   const request = store.dispatch({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://integration.test',
+      endpoint: fakeApiEndpoint,
       types: requestTypes
     }
   })
@@ -83,19 +91,21 @@ test('Successful API request', async t => {
 })
 
 test('Failed API request', async t => {
+  const { fakeApiEndpoint } = t.context
+
   const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
   const store = createTestStore({
     types: requestTypes
   })
 
-  fetchMock.mock('http://integration.test', {
+  fetchMock.mock(fakeApiEndpoint, {
     body: 'Not allowed',
     status: 400
   })
 
   const request = store.dispatch({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://integration.test',
+      endpoint: fakeApiEndpoint,
       types: requestTypes
     }
   })
@@ -118,7 +128,7 @@ test('Failed API request', async t => {
     t.is(storeState.response, null)
 
     // Assert the Response object was included in the action payload
-    t.is(storeState.error.url, 'http://integration.test')
+    t.is(storeState.error.url, fakeApiEndpoint)
     t.is(storeState.error.status, 400)
 
     // Assert Promise rejected with error payload

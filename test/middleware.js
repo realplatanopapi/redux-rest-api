@@ -2,11 +2,15 @@ import test from 'ava'
 import { spy } from 'sinon'
 import fetchMock from 'fetch-mock'
 
+import { getFakeApiEndpoint } from './helpers/api'
 import createTestStore from './helpers/create-test-store'
 
 import { API_ACTION_TYPE, apiMiddleware } from '../src'
 
-test.beforeEach(() => {
+test.beforeEach(t => {
+  // Generate fake api endpoint.
+  t.context.fakeApiEndpoint = getFakeApiEndpoint('fierizone')
+
   // Reset fetch mocks before every test.
   fetchMock.restore()
 })
@@ -33,6 +37,8 @@ test('Ignores non-api actions', t => {
 })
 
 test('Converts API actions to Promises', t => {
+  const { fakeApiEndpoint } = t.context
+
   const store = createTestStore({
     types: ['PENDING', 'SUCCESS', 'FAILURE']
   })
@@ -42,7 +48,7 @@ test('Converts API actions to Promises', t => {
   // Invoke middleware
   const promise = apiMiddleware(store)(next)({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://middleware.test',
+      endpoint: fakeApiEndpoint,
       types: ['PENDING', 'SUCCESS', 'FAILURE']
     }
   })
@@ -56,6 +62,8 @@ test('Converts API actions to Promises', t => {
 })
 
 test('Dispatching pending action type', t => {
+  const { fakeApiEndpoint } = t.context
+
   const store = createTestStore({
     types: ['PENDING', 'SUCCESS', 'FAILURE']
   })
@@ -65,7 +73,7 @@ test('Dispatching pending action type', t => {
 
   apiMiddleware(store)(next)({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://middleware.test',
+      endpoint: fakeApiEndpoint,
       types: ['PENDING', 'SUCCESS', 'FAILURE']
     }
   })
@@ -77,12 +85,14 @@ test('Dispatching pending action type', t => {
 })
 
 test('Dispatching success action type on successful fetch request', async t => {
+  const { fakeApiEndpoint } = t.context
+
   const store = createTestStore({
     types: ['PENDING', 'SUCCESS', 'FAILURE']
   })
 
   // Respond to fetch request with Guy Fieri
-  fetchMock.mock('http://middleware.test', {
+  fetchMock.mock(fakeApiEndpoint, {
     name: 'Guy Fieri'
   })
 
@@ -92,7 +102,7 @@ test('Dispatching success action type on successful fetch request', async t => {
   // Invoke middleware
   const promise = apiMiddleware(store)(next)({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://middleware.test',
+      endpoint: fakeApiEndpoint,
       types: ['PENDING', 'SUCCESS', 'FAILURE']
     }
   })
@@ -116,12 +126,14 @@ test('Dispatching success action type on successful fetch request', async t => {
 })
 
 test('Dispatching failure action type on failed fetch request', async t => {
+  const { fakeApiEndpoint } = t.context
+
   const store = createTestStore({
     types: ['PENDING', 'SUCCESS', 'FAILURE']
   })
 
   // Respond to fetch request with an error
-  fetchMock.mock('http://middleware.test', 500)
+  fetchMock.mock(fakeApiEndpoint, 500)
 
   const dispatchSpy = spy(store, 'dispatch')
   const next = spy()
@@ -129,7 +141,7 @@ test('Dispatching failure action type on failed fetch request', async t => {
   // Invoke middleware
   const promise = apiMiddleware(store)(next)({
     [API_ACTION_TYPE]: {
-      endpoint: 'http://middleware.test',
+      endpoint: fakeApiEndpoint,
       types: ['PENDING', 'SUCCESS', 'FAILURE']
     }
   })
@@ -151,7 +163,7 @@ test('Dispatching failure action type on failed fetch request', async t => {
     t.deepEqual(dispatchSpy.getCall(1).args[0], error)
 
     // Assert the Response object was included in the action payload
-    t.is(error.payload.url, 'http://middleware.test')
+    t.is(error.payload.url, fakeApiEndpoint)
     t.is(error.payload.status, 500)
     t.is(error.payload.statusText, 'Internal Server Error')
   }
