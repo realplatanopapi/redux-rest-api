@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore } from 'redux'
 
-import { apiMiddleware, apiReducer } from '../../src/index'
+import { apiMiddleware, configureApiReducer } from '../../src/index'
 
 export default function createTestStore (apiReducerOptions) {
-  return createStore(apiReducer(apiReducerOptions), applyMiddleware(apiMiddleware))
+  return createStore(configureApiReducer(apiReducerOptions), applyMiddleware(apiMiddleware))
 }
