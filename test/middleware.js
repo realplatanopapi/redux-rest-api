@@ -1,15 +1,7 @@
 import test from 'ava'
 import fetchMock from 'fetch-mock'
-import { applyMiddleware, createStore } from 'redux'
 
-import { apiMiddleware, apiReducer } from '../src/index'
-
-test.beforeEach(t => {
-  // Create a fresh store for each test.
-  t.context.store = createStore(apiReducer({
-    types: ['API_FETCH_PENDING', 'API_FETCH_SUCCESS', 'API_FETCH_ERROR']
-  }), applyMiddleware(apiMiddleware))
-})
+import createTestStore from './helpers/create-test-store'
 
 test.afterEach(t => {
   // Reset fetch mock state after each test
@@ -22,7 +14,7 @@ test.after(t => {
 })
 
 test('Initializes state', t => {
-  const { store } = t.context
+  const store = createTestStore({types: []})
   t.deepEqual(store.getState(), {
     error: null,
     isPending: false,
