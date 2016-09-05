@@ -1,5 +1,5 @@
 import test from 'ava'
-import { API_ACTION_TYPE, apiMiddleware, configureApiReducer } from '../src/index'
+import { API_ACTION_TYPE, apiMiddleware, configureApiReducer } from '../src'
 
 test('Package exports', t => {
   t.is(typeof API_ACTION_TYPE, 'string')
