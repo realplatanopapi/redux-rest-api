@@ -71,6 +71,7 @@
     "eslint-plugin-standard": "^2.0.0",
     "fetch-mock": "^5.1.1",
     "isomorphic-fetch": "^2.2.1",
-    "redux": "^3.6.0"
+    "redux": "^3.6.0",
+    "sinon": "^1.17.5"
   }
 }
