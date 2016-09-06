@@ -2,7 +2,7 @@
   "name": "redux-api-promise-middleware",
   "version": "0.1.1",
   "main": "dist/index.js",
-  "description": "Redux middleware for generating promises for API actions.",
+  "description": "Middleware that gives you a uniform way to define API actions in Redux applications.",
   "scripts": {
     "build": "babel src --out-dir dist",
     "build:watch": "npm run build -- --watch",
