@@ -74,5 +74,9 @@
     "isomorphic-fetch": "^2.2.1",
     "redux": "^3.6.0",
     "sinon": "^1.17.5"
-  }
+  },
+  "files": [
+    "README.md",
+    "dist/"
+  ]
 }
