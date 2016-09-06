@@ -28,15 +28,13 @@ store.dispatch({
 })
 ```
 
-# Installation
+## Installation
 
 ```
 npm install redux-api-promise-middleware
 ```
 
 ## Usage
-
-
 
 ### Add middleware to store
 
