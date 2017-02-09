@@ -36,12 +36,6 @@
       "isomorphic-fetch"
     ]
   },
-  "babel": {
-    "presets": [
-      "es2015"
-    ],
-    "sourceMaps": "inline"
-  },
   "eslintConfig": {
     "extends": "standard",
     "env": {
