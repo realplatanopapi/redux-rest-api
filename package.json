@@ -40,14 +40,7 @@
     "presets": [
       "es2015"
     ],
-    "sourceMaps": "inline",
-    "env": {
-      "production": {
-        "presets": [
-          "babili"
-        ]
-      }
-    }
+    "sourceMaps": "inline"
   },
   "eslintConfig": {
     "extends": "standard",
@@ -63,7 +56,6 @@
     "ava": "^0.16.0",
     "babel-cli": "^6.14.0",
     "babel-eslint": "^6.1.2",
-    "babel-preset-babili": "0.0.2",
     "babel-preset-es2015": "^6.14.0",
     "babel-register": "^6.14.0",
     "eslint": "^3.4.0",
