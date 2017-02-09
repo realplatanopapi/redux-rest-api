@@ -1,6 +1,6 @@
 {
   "name": "redux-api-promise-middleware",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "dependencies": {
     "ava": {
       "version": "0.16.0",
