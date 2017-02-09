@@ -8,8 +8,8 @@
     "build:watch": "npm run build -- --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src test",
-    "prepublish": "npm test",
-    "test": "npm run lint && ava test && npm run clean && NODE_ENV=production npm run build",
+    "prepublish": "npm run build",
+    "test": "npm run lint && ava test",
     "test:watch": "ava test --watch"
   },
   "author": "Mario Pabon <me@mariopabon.com> (https://mariopabon.com/)",
