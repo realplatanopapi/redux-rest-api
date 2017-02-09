@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "description": "Middleware that gives you a uniform way to define API actions in Redux applications.",
   "scripts": {
-    "build": "babel src --out-dir dist",
+    "build": "babel src --out-dir dist --source-maps",
     "build:watch": "npm run build -- --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src test",
