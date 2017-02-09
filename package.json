@@ -5,12 +5,12 @@
   "description": "Middleware that gives you a uniform way to define API actions in Redux applications.",
   "scripts": {
     "build": "npm run clean && babel src --out-dir dist --source-maps",
-    "build:watch": "npm run build -- --watch",
+    "build/watch": "npm run build -- --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src test",
     "prepublish": "npm run build",
     "test": "npm run lint && ava test",
-    "test:watch": "ava test --watch"
+    "test/watch": "ava test --watch"
   },
   "author": "Mario Pabon <me@mariopabon.com> (https://mariopabon.com/)",
   "license": "MIT",
