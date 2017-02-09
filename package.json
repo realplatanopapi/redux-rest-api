@@ -76,7 +76,6 @@
     "sinon": "^1.17.5"
   },
   "files": [
-    "README.md",
     "dist/"
   ]
 }
