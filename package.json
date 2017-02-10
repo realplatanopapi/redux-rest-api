@@ -3,21 +3,16 @@
   "version": "0.1.1",
   "main": "dist/index.js",
   "description": "Middleware that gives you a uniform way to define API actions in Redux applications.",
-  "scripts": {
-    "clean": "rm -rf dist",
-    "build/watch": "npm run build -- --watch",
-    "build": "npm run clean && babel src --out-dir dist --source-maps",
-    "lint": "eslint src test",
-    "test": "npm run lint && ava test",
-    "test/watch": "ava test --watch",
-    "prepublish": "npm run build"
-  },
   "author": "Mario Pabon <me@mariopabon.com> (https://mariopabon.com/)",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/restlessbit/redux-api-promise-middleware.git"
   },
+  "bugs": {
+    "url": "https://github.com/restlessbit/redux-api-promise-middleware/issues"
+  },
+  "homepage": "https://github.com/restlessbit/redux-api-promise-middleware#readme",
   "keywords": [
     "redux",
     "redux-middleware",
@@ -26,15 +21,17 @@
     "promises",
     "api"
   ],
-  "bugs": {
-    "url": "https://github.com/restlessbit/redux-api-promise-middleware/issues"
-  },
-  "homepage": "https://github.com/restlessbit/redux-api-promise-middleware#readme",
-  "ava": {
-    "require": [
-      "babel-register",
-      "isomorphic-fetch"
-    ]
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build/watch": "npm run build -- --watch",
+    "build": "npm run clean && babel src --out-dir dist --source-maps",
+    "lint": "eslint src test",
+    "test": "npm run lint && ava test",
+    "test/watch": "ava test --watch",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "object-assign": "^4.1.0"
@@ -54,7 +51,10 @@
     "redux": "^3.6.0",
     "sinon": "^1.17.5"
   },
-  "files": [
-    "dist/"
-  ]
+  "ava": {
+    "require": [
+      "babel-register",
+      "isomorphic-fetch"
+    ]
+  }
 }
