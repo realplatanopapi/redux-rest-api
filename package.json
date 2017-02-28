@@ -29,7 +29,7 @@
     "build/watch": "npm run build -- --watch",
     "build": "npm run clean && babel src --out-dir dist --source-maps",
     "lint": "eslint src test",
-    "mocha": "mocha --recursive --reporter dot test",
+    "mocha": "mocha --recursive --reporter dot test --require babel-register",
     "test": "npm run lint && mocha test",
     "test/watch": "npm run mocha -- --watch",
     "prepublish": "npm run build"
@@ -46,6 +46,7 @@
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-promise": "^3.4.1",
     "eslint-plugin-standard": "^2.0.1",
+    "expect": "^1.20.2",
     "isomorphic-fetch": "^2.2.1",
     "mocha": "^3.2.0",
     "nock": "^9.0.9",
