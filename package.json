@@ -30,7 +30,7 @@
     "build": "npm run clean && babel src --out-dir dist --source-maps",
     "lint": "eslint .",
     "mocha": "mocha --recursive --reporter dot test --require babel-register",
-    "test": "npm run lint && mocha test",
+    "test": "npm run lint && npm run mocha",
     "test/watch": "npm run mocha -- --watch",
     "prepublish": "npm run build"
   },
