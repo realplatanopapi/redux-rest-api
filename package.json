@@ -50,7 +50,7 @@
     "isomorphic-fetch": "^2.2.1",
     "mocha": "^3.2.0",
     "nock": "^9.0.9",
-    "redux": "^3.6.0",
+    "redux": "https://registry.npmjs.org/redux/-/redux-3.6.0.tgz",
     "sinon": "^1.17.7"
   }
 }
