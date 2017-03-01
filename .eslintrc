@@ -1,5 +1,9 @@
 {
   "extends": "standard",
+  "parser": "babel-eslint",
+  "parserOptions": {
+      "sourceType": "module",
+  },
   "env": {
     "browser": true,
     "node": true
