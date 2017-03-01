@@ -1,11 +1,11 @@
-# redux-api-promise-middleware [![Build Status](https://travis-ci.org/restlessbit/redux-api-promise-middleware.svg?branch=master)](https://travis-ci.org/restlessbit/redux-api-promise-middleware)
+# redux-rest-api [![Build Status](https://travis-ci.org/restlessbit/redux-rest-api.svg?branch=master)](https://travis-ci.org/restlessbit/redux-rest-api)
 
 Middleware that gives you a uniform way to define API actions in Redux applications.
 
 Example usage:
 
 ```javascript
-import { API_ACTION_TYPE } from 'redux-api-promise-middleware'
+import { API_ACTION_TYPE } from 'redux-rest-api'
 
 store.dispatch({
   [API_ACTION_TYPE]: {
@@ -31,7 +31,7 @@ store.dispatch({
 ## Installation
 
 ```
-npm install redux-api-promise-middleware
+npm install redux-rest-api
 ```
 
 ## Usage
@@ -42,7 +42,7 @@ In order for a fetch to request to be generated whenever an API action is dispat
 
 ```javascript
 // Adding the api middleware to your store
-import { apiMiddleware } from 'redux-api-promise-middleware'
+import { apiMiddleware } from 'redux-rest-api'
 import { applyMiddleware, createStore } from 'redux'
 
 const middleware = applyMiddleware(apiMiddleware)
@@ -54,7 +54,7 @@ Now whenever an [API action](#dispatching-api-actions) like this gets dispatched
 
 ```javascript
 // Example API action
-import { API_ACTION_TYPE } from 'redux-api-promise-middleware'
+import { API_ACTION_TYPE } from 'redux-rest-api'
 
 const promise = store.dispatch({
   [API_ACTION_TYPE]: {
@@ -113,7 +113,7 @@ The failure action is dispatched to the store if the fetch request is rejected w
 
 Now that you have middleware that is generating actions for you, you need to create a reducer that will handle those actions and update the store accordingly.
 
-You can use the reducer included with `redux-api-promise-middleware` to handle these actions, or you can write your own.
+You can use the reducer included with `redux-rest-api` to handle these actions, or you can write your own.
 
 #### Using the provided reducer
 
@@ -133,13 +133,13 @@ const state = {
 }
 ```
 
-As such, `redux-api-promise-middleware` provides a reducer that you can use to manage the state of multiple API requests.
+As such, `redux-rest-api` provides a reducer that you can use to manage the state of multiple API requests.
 
 ##### Example usage
 
 ```javascript
 // Setting up reducers to handle the state for multiple API requests within an application
-import { configureApiReducer } from 'redux-api-promise-middleware'
+import { configureApiReducer } from 'redux-rest-api'
 import { combineReducers } from 'redux'
 
 const reducers = combineReducers({
@@ -222,7 +222,7 @@ with the [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) o
 
 If the provided reducer doesn't meet your needs, you can always write your own reducer to handle the actions that are dispatched by the API middleware.
 
-Check out the [source for the included reducer](https://github.com/restlessbit/redux-api-promise-middleware/blob/e3bb2239bb7236480e96ac26ebe9318724e606fc/src/reducer.js#L20) for an example.
+Check out the [source for the included reducer](https://github.com/restlessbit/redux-rest-api/blob/e3bb2239bb7236480e96ac26ebe9318724e606fc/src/reducer.js#L20) for an example.
 
 ### Dispatching API actions
 
@@ -251,7 +251,7 @@ Here's an example of delaying rendering with React Router:
 
 ```javascript
 // Example of delaying rendering until data has been fetched
-import { API_ACTION_TYPE } from 'redux-api-promise-middleware'
+import { API_ACTION_TYPE } from 'redux-rest-api'
 
 // Route configuration that has been given access to the store.
 // Example: routeConfig(store): route configuration
