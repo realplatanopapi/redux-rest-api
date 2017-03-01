@@ -24,19 +24,19 @@ export default ({ dispatch }) => next => action => {
 
       return response.json()
     }).then(json => {
-      const successAction = dispatch({
+      dispatch({
         type: SUCCESS_TYPE,
         payload: json
       })
 
-      resolve(successAction)
+      resolve(json)
     }).catch(error => {
-      const failureAction = dispatch({
+      dispatch({
         type: FAILURE_TYPE,
         payload: error
       })
 
-      reject(failureAction)
+      reject(error)
     })
   })
 }
