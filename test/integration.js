@@ -1,137 +1,76 @@
-import fetchMock from 'fetch-mock'
-import test from 'ava'
+import {API_ACTION_TYPE, apiMiddleware, configureApiReducer} from '../src'
+import {applyMiddleware, createStore} from 'redux'
+import expect from 'expect'
+import nock from 'nock'
+import {spy} from 'sinon'
 
-import { getFakeApiEndpoint } from './helpers/api'
-import createTestStore from './helpers/create-test-store'
-
-import { API_ACTION_TYPE } from '../src'
-
-test.beforeEach(t => {
-  // Generate fake api endpoint.
-  t.context.fakeApiEndpoint = getFakeApiEndpoint('monsterfactory')
-
-  // Reset fetch mocks before every test
-  fetchMock.restore()
-})
-
-test('Initial state', t => {
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
+describe('Integration test', function () {
+  beforeEach(function () {
+    this.store = createStore(
+      configureApiReducer({
+        types: ['PENDING', 'SUCCESS', 'FAILURE']
+      }),
+      applyMiddleware(apiMiddleware)
+    )
   })
 
-  t.deepEqual(store.getState(), {
-    error: null,
-    isPending: false,
-    response: null
-  })
-})
+  it('handles successful requests', function () {
+    nock('http://fakeapi.test').get('/').reply(200, {
+      data: 'it worked!'
+    })
 
-test('API actions are converted to Promises', t => {
-  const { fakeApiEndpoint } = t.context
-
-  const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
-  const store = createTestStore({
-    types: requestTypes
-  })
-
-  const request = store.dispatch({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: requestTypes
+    const dispatchSpy = spy(this.store, 'dispatch')
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test'
+      }
     }
+
+    this.store.dispatch(action)
+
+    expect(this.store.getState()).toEqual({
+      isPending: true,
+      response: null,
+      error: null
+    })
+
+    return dispatchSpy.firstCall.returnValue.then(() => {
+      expect(this.store.getState()).toEqual({
+        isPending: false,
+        response: {
+          data: 'it worked!'
+        },
+        error: null
+      })
+    })
   })
 
-  t.true(typeof request.then === 'function')
-  t.true(typeof request.catch === 'function')
-})
+  it('handles failed requests', function () {
+    nock('http://fakeapi.test').get('/').reply(500, {})
 
-test('Successful API request', async t => {
-  const { fakeApiEndpoint } = t.context
-
-  const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
-  const store = createTestStore({
-    types: requestTypes
-  })
-
-  fetchMock.mock(fakeApiEndpoint, {
-    name: 'mario the ghost',
-    age: 23
-  })
-
-  const request = store.dispatch({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: requestTypes
+    const dispatchSpy = spy(this.store, 'dispatch')
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test'
+      }
     }
+
+    this.store.dispatch(action)
+
+    expect(this.store.getState()).toEqual({
+      isPending: true,
+      response: null,
+      error: null
+    })
+
+    return dispatchSpy.firstCall.returnValue.catch(response => {
+      expect(this.store.getState()).toEqual({
+        isPending: false,
+        response: null,
+        error: response
+      })
+    })
   })
-
-  // Assert state was updated
-  t.deepEqual(store.getState(), {
-    error: null,
-    isPending: true,
-    response: null
-  })
-
-  // Wait for request to complete
-  const result = await request
-
-  // Assert state was updated
-  const storeState = store.getState()
-  t.deepEqual(store.getState(), {
-    error: null,
-    isPending: false,
-    response: {
-      name: 'mario the ghost',
-      age: 23
-    }
-  })
-
-  // Assert Promise resolved with response payload
-  t.deepEqual(storeState.response, result.payload)
-})
-
-test('Failed API request', async t => {
-  const { fakeApiEndpoint } = t.context
-
-  const requestTypes = ['PENDING', 'SUCCESS', 'FAILURE']
-  const store = createTestStore({
-    types: requestTypes
-  })
-
-  fetchMock.mock(fakeApiEndpoint, {
-    body: 'Not allowed',
-    status: 400
-  })
-
-  const request = store.dispatch({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: requestTypes
-    }
-  })
-
-  // Assert state was updated
-  t.deepEqual(store.getState(), {
-    error: null,
-    isPending: true,
-    response: null
-  })
-
-  // Wait for request to complete
-  try {
-    await request
-    // Fail the test if the request was not rejected
-    t.fail()
-  } catch (error) {
-    const storeState = store.getState()
-    t.is(storeState.isPending, false)
-    t.is(storeState.response, null)
-
-    // Assert the Response object was included in the action payload
-    t.is(storeState.error.url, fakeApiEndpoint)
-    t.is(storeState.error.status, 400)
-
-    // Assert Promise rejected with error payload
-    t.deepEqual(storeState.error, error.payload)
-  }
 })

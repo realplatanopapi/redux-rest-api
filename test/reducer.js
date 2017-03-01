@@ -1,299 +1,91 @@
-import test from 'ava'
+import {configureApiReducer} from '../src'
+import expect from 'expect'
 
-import { configureApiReducer } from '../src'
-
-test('Error is thrown if options object is missing or invalid', t => {
-  t.throws(configureApiReducer)
-  t.throws(() => {
-    configureApiReducer({})
+describe('configureReducer()', function () {
+  it('throws an error when `types` array is invalid', function () {
+    expect(() => configureApiReducer()).toThrow()
+    expect(() => configureApiReducer({typees: ['PENDING', 'SUCCESS']})).toThrow()
   })
-  t.throws(() => {
-    configureApiReducer({
-      types: 'Not an array'
+
+  it('does not throw an error when `types` array is valid', function () {
+    expect(() => configureApiReducer({types: ['PENDING', 'SUCCESS', 'FAILURE']})).toNotThrow()
+  })
+
+  it('returns a reducer function', function () {
+    expect(configureApiReducer({types: ['PENDING', 'SUCCESS', 'FAILURE']})).toBeA('function')
+  })
+})
+
+describe('reducer returned from `configureReducer()`', function () {
+  before(function () {
+    this.reducer = configureApiReducer({
+      types: ['PENDING', 'SUCCESS', 'FAILURE']
+    })
+
+    this.initialState = this.reducer(undefined, {
+      type: '@@INIT'
     })
   })
-  t.throws(() => {
-    configureApiReducer({
-      types: ['Not', '3']
+
+  it('returns initial state when state is undefined', function () {
+    expect(this.initialState).toEqual({
+      error: null,
+      isPending: false,
+      response: null
     })
   })
-  t.notThrows(() => {
-    configureApiReducer({
-      types: ['1', '2', '3']
+
+  it('ignores action types not present in `types`', function () {
+    const state = this.reducer(this.initialState, {
+      type: 'TEST_ACTION'
+    })
+
+    expect(state).toEqual({
+      error: null,
+      isPending: false,
+      response: null
     })
   })
-})
 
-test('Return value is a function', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-  t.true(typeof reducer === 'function')
-})
+  it('handles `pending` action type', function () {
+    const state = this.reducer(this.initialState, {
+      type: 'PENDING'
+    })
 
-test('Initial state', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const state = reducer(undefined, {
-    type: 'INIT'
+    expect(state).toEqual({
+      error: null,
+      isPending: true,
+      response: null
+    })
   })
 
-  t.deepEqual(state, {
-    error: null,
-    isPending: false,
-    response: null
-  })
-})
-
-test('Un-recognized actions', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  let initialState = {
-    fakeState: 'some fake state'
-  }
-
-  const state = reducer(initialState, {
-    type: 'RANDO_ACTION'
-  })
-
-  // Assert state was returned un-modified
-  t.deepEqual(state, {
-    fakeState: 'some fake state'
-  })
-})
-
-test('Receiving actions with initial state', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const initialState = reducer(undefined, {
-    type: 'INIT'
-  })
-
-  // Pending action
-  let state = reducer(initialState, {
-    type: 'PENDING'
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: true,
-    response: null
-  })
-
-  // Success action
-  state = reducer(initialState, {
-    type: 'SUCCESS',
-    payload: {
-      data: {}
-    }
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: false,
-    response: {
-      data: {}
-    }
-  })
-
-  // Failure action
-  state = reducer(initialState, {
-    type: 'FAILURE',
-    payload: {
-      message: 'Some fake error'
-    }
-  })
-
-  t.deepEqual(state, {
-    error: {
-      message: 'Some fake error'
-    },
-    isPending: false,
-    response: null
-  })
-})
-
-test('Receiving actions with a request pending', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const initialState = {
-    isPending: true,
-    response: null,
-    error: null
-  }
-
-  // Pending action
-  let state = reducer(initialState, {
-    type: 'PENDING'
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: true,
-    response: null
-  })
-
-  // Success action
-  state = reducer(initialState, {
-    type: 'SUCCESS',
-    payload: {
-      data: {}
-    }
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: false,
-    response: {
-      data: {}
-    }
-  })
-
-  // Failure action
-  state = reducer(initialState, {
-    type: 'FAILURE',
-    payload: {
-      message: 'Some fake error'
-    }
-  })
-
-  t.deepEqual(state, {
-    error: {
-      message: 'Some fake error'
-    },
-    isPending: false,
-    response: null
-  })
-})
-
-test('Receiving actions with response populated', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const initialState = {
-    isPending: false,
-    response: {
-      data: {}
-    },
-    error: null
-  }
-
-  // Pending action
-  let state = reducer(initialState, {
-    type: 'PENDING'
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: true,
-    response: {
-      data: {}
-    }
-  })
-
-  // Success action
-  state = reducer(initialState, {
-    type: 'SUCCESS',
-    payload: {
-      newData: {
-        message: 'hey'
+  it('handles `success` action type', function () {
+    const state = this.reducer(this.initialState, {
+      type: 'SUCCESS',
+      payload: {
+        data: 'yo'
       }
-    }
-  })
+    })
 
-  t.deepEqual(state, {
-    error: null,
-    isPending: false,
-    response: {
-      newData: {
-        message: 'hey'
+    expect(state).toEqual({
+      error: null,
+      isPending: false,
+      response: {
+        data: 'yo'
       }
-    }
+    })
   })
 
-  // Failure action
-  state = reducer(initialState, {
-    type: 'FAILURE',
-    payload: {
-      message: 'Some fake error'
-    }
-  })
+  it('handles `failure` action type', function () {
+    const state = this.reducer(this.initialState, {
+      type: 'FAILURE',
+      payload: new Error('Oh no!')
+    })
 
-  t.deepEqual(state, {
-    error: {
-      message: 'Some fake error'
-    },
-    isPending: false,
-    response: {
-      data: {}
-    }
-  })
-})
-
-test('Receiving actions with error populated', t => {
-  const reducer = configureApiReducer({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const initialState = {
-    isPending: false,
-    response: null,
-    error: {
-      message: 'why u breaking things'
-    }
-  }
-
-  // Pending action
-  let state = reducer(initialState, {
-    type: 'PENDING'
-  })
-
-  t.deepEqual(state, {
-    error: {
-      message: 'why u breaking things'
-    },
-    isPending: true,
-    response: null
-  })
-
-  // Success action
-  state = reducer(initialState, {
-    type: 'SUCCESS',
-    payload: {
-      data: {}
-    }
-  })
-
-  t.deepEqual(state, {
-    error: null,
-    isPending: false,
-    response: {
-      data: {}
-    }
-  })
-
-  // Failure action
-  state = reducer(initialState, {
-    type: 'FAILURE',
-    payload: {
-      message: 'Some fake error'
-    }
-  })
-
-  t.deepEqual(state, {
-    error: {
-      message: 'Some fake error'
-    },
-    isPending: false,
-    response: null
+    expect(state).toEqual({
+      error: new Error('Oh no!'),
+      isPending: false,
+      response: null
+    })
   })
 })

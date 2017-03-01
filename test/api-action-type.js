@@ -1,7 +1,8 @@
-import test from 'ava'
-
 import { API_ACTION_TYPE } from '../src'
+import expect from 'expect'
 
-test('Unique API_ACTION_TYPE value', t => {
-  t.is(API_ACTION_TYPE, '@@API_ACTION_TYPE')
+describe('API_ACTION_TYPE', function () {
+  it('is a string', function () {
+    expect(API_ACTION_TYPE).toEqual('@@API_ACTION_TYPE')
+  })
 })

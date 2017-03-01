@@ -1,8 +1,16 @@
-import test from 'ava'
-import { API_ACTION_TYPE, apiMiddleware, configureApiReducer } from '../src'
+import {API_ACTION_TYPE, apiMiddleware, configureApiReducer} from '../src'
+import expect from 'expect'
 
-test('Package exports', t => {
-  t.true(typeof API_ACTION_TYPE === 'string')
-  t.true(typeof apiMiddleware === 'function')
-  t.true(typeof configureApiReducer === 'function')
+describe('Package exports', function () {
+  it('includes `API_ACTION_TYPE`', function () {
+    expect(API_ACTION_TYPE).toBe('@@API_ACTION_TYPE')
+  })
+
+  it('includes `apiMiddleware`', function () {
+    expect(apiMiddleware).toBeA('function')
+  })
+
+  it('includes `configureApiReducer`', function () {
+    expect(configureApiReducer).toBeA('function')
+  })
 })

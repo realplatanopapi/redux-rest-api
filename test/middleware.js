@@ -1,232 +1,179 @@
-import test from 'ava'
-import { spy } from 'sinon'
-import fetchMock from 'fetch-mock'
+import 'isomorphic-fetch'
+import {API_ACTION_TYPE, apiMiddleware} from '../src'
+import expect from 'expect'
+import nock from 'nock'
+import {spy} from 'sinon'
 
-import { getFakeApiEndpoint } from './helpers/api'
-import createTestStore from './helpers/create-test-store'
-
-import { API_ACTION_TYPE, apiMiddleware } from '../src'
-
-test.beforeEach(t => {
-  // Generate fake api endpoint.
-  t.context.fakeApiEndpoint = getFakeApiEndpoint('fierizone')
-
-  // Reset fetch mocks before every test.
-  fetchMock.restore()
-})
-
-test('Ignores non-api actions', t => {
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
+describe('middleware', function () {
+  before(function () {
+    this.fetchSpy = spy(global, 'fetch')
   })
 
-  const next = spy()
-
-  // Invoke middleware with a non-api middleware
-  const result = apiMiddleware(store)(next)({
-    type: 'Meep'
+  beforeEach(function () {
+    nock('http://fakeapi.test').get('/').reply(200, {
+      data: 'some_fake_data'
+    })
   })
 
-  // Assert action was ignored passed along with next
-  t.deepEqual(next.firstCall.args[0], {
-    type: 'Meep'
+  afterEach(function () {
+    this.fetchSpy.reset()
+    nock.cleanAll()
   })
 
-  // Assert a Promise was not returned
-  t.true(typeof result === 'undefined')
-})
-
-test('Converts API actions to Promises', t => {
-  const { fakeApiEndpoint } = t.context
-
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
+  after(function () {
+    this.fetchSpy.restore()
   })
 
-  const next = spy()
-
-  // Invoke middleware
-  const promise = apiMiddleware(store)(next)({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: ['PENDING', 'SUCCESS', 'FAILURE']
-    }
-  })
-
-  // Assert next was not invoked
-  t.is(next.callCount, 0)
-
-  // Assert a Promise was returned
-  t.true(typeof promise.then === 'function')
-  t.true(typeof promise.catch === 'function')
-})
-
-test('Dispatching pending action type', t => {
-  const { fakeApiEndpoint } = t.context
-
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  const dispatchSpy = spy(store, 'dispatch')
-  const next = spy()
-
-  apiMiddleware(store)(next)({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: ['PENDING', 'SUCCESS', 'FAILURE']
-    }
-  })
-
-  // Assert the pending action was dispatched to the store
-  t.deepEqual(dispatchSpy.firstCall.args[0], {
-    type: 'PENDING'
-  })
-})
-
-test('Dispatching success action type on successful fetch request', async t => {
-  const { fakeApiEndpoint } = t.context
-
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  // Respond to fetch request with Guy Fieri
-  fetchMock.mock(fakeApiEndpoint, {
-    name: 'Guy Fieri'
-  })
-
-  const dispatchSpy = spy(store, 'dispatch')
-  const next = spy()
-
-  // Invoke middleware
-  const promise = apiMiddleware(store)(next)({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: ['PENDING', 'SUCCESS', 'FAILURE']
-    }
-  })
-
-  // Assert the pending action was dispatched to the store
-  t.deepEqual(dispatchSpy.firstCall.args[0], {
-    type: 'PENDING'
-  })
-
-  const result = await promise
-  // Assert the Promise resolved with the success action
-  t.deepEqual(result, {
-    type: 'SUCCESS',
-    payload: {
-      name: 'Guy Fieri'
-    }
-  })
-
-  // Assert the success action was dispatched to the store
-  t.deepEqual(dispatchSpy.getCall(1).args[0], result)
-})
-
-test('Dispatching failure action type on failed fetch request', async t => {
-  const { fakeApiEndpoint } = t.context
-
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  // Respond to fetch request with an error
-  fetchMock.mock(fakeApiEndpoint, 500)
-
-  const dispatchSpy = spy(store, 'dispatch')
-  const next = spy()
-
-  // Invoke middleware
-  const promise = apiMiddleware(store)(next)({
-    [API_ACTION_TYPE]: {
-      endpoint: fakeApiEndpoint,
-      types: ['PENDING', 'SUCCESS', 'FAILURE']
-    }
-  })
-
-  // Assert the pending action was dispatched to the store
-  t.deepEqual(dispatchSpy.firstCall.args[0], {
-    type: 'PENDING'
-  })
-
-  try {
-    await promise
-    // Fail the test if the Promise was not rejected
-    t.fail('Promise was not rejected.')
-  } catch (error) {
-    // Assert the Promise rejected with the failure action
-    t.is(error.type, 'FAILURE')
-
-    // Assert the failure action was dispatched to the store
-    t.deepEqual(dispatchSpy.getCall(1).args[0], error)
-
-    // Assert the Response object was included in the action payload
-    t.is(error.payload.url, fakeApiEndpoint)
-    t.is(error.payload.status, 500)
-    t.is(error.payload.statusText, 'Internal Server Error')
-  }
-})
-
-test('Passing options to underlying fetch request', async t => {
-  const store = createTestStore({
-    types: ['PENDING', 'SUCCESS', 'FAILURE']
-  })
-
-  // Respond to fetch request with Guy Fieri
-  fetchMock.mock('http://monsterfactory.test', JSON.stringify({
-    message: 'Oh no what have you done'
-  }), {
-    method: 'POST'
-  })
-
-  const dispatchSpy = spy(store, 'dispatch')
-  const next = spy()
-
-  // Invoke middleware
-  const promise = apiMiddleware(store)(next)({
-    [API_ACTION_TYPE]: {
-      endpoint: 'http://monsterfactory.test',
-      types: ['PENDING', 'SUCCESS', 'FAILURE'],
-      fetchOptions: {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'Guy Fieri'
-        })
+  it('dispatches `pending` action type before making request', function () {
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test'
       }
     }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
+
+    apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    expect(dispatchSpy.callCount).toEqual(1)
+    expect(dispatchSpy.firstCall.args).toEqual([{
+      type: 'PENDING'
+    }])
   })
 
-  // Assert the pending action was dispatched to the store
-  t.deepEqual(dispatchSpy.firstCall.args[0], {
-    type: 'PENDING'
-  })
-
-  const result = await promise
-  // Assert the Promise resolved with the success action
-  t.deepEqual(result, {
-    type: 'SUCCESS',
-    payload: {
-      message: 'Oh no what have you done'
+  it('makes fetch request with passed options', function () {
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test',
+        fetchOptions: {
+          headers: {
+            'accept': 'application/json',
+            'authorization': 'bearer token'
+          }
+        }
+      }
     }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
+
+    apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    // Assert a request was made
+    expect(this.fetchSpy.callCount).toEqual(1)
+    expect(this.fetchSpy.firstCall.args).toEqual(['http://fakeapi.test', {
+      headers: {
+        'accept': 'application/json',
+        'authorization': 'bearer token'
+      }
+    }])
   })
 
-  // Assert the success action was dispatched to the store
-  t.deepEqual(dispatchSpy.getCall(1).args[0], result)
+  it('returns a promise when it receives an api action', function () {
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test'
+      }
+    }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
 
-  // Assert options were passed to fetch request
-  const lastCallArgs = fetchMock.lastCall('http://monsterfactory.test')
-  t.deepEqual(lastCallArgs, ['http://monsterfactory.test', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      name: 'Guy Fieri'
+    const result = apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    expect(result.then).toBeA('function')
+    expect(result.catch).toBeA('function')
+  })
+
+  it('dispatches `success` action type when request resolves', function () {
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test'
+      }
+    }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
+
+    const result = apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    return result.then(() => {
+      // Assert action was dispatched
+      expect(dispatchSpy.callCount).toEqual(2)
+
+      expect(dispatchSpy.firstCall.args).toEqual([{
+        type: 'PENDING'
+      }])
+
+      expect(dispatchSpy.secondCall.args).toEqual([{
+        type: 'SUCCESS',
+        payload: {
+          data: 'some_fake_data'
+        }
+      }])
     })
-  }])
+  })
+
+  it('dispatches `failure` action type when request rejects', function () {
+    // Respond to fake request with an error
+    nock('http://fakeapi.test').get('/error').reply(500)
+
+    // Make request
+    const action = {
+      [API_ACTION_TYPE]: {
+        types: ['PENDING', 'SUCCESS', 'FAILURE'],
+        endpoint: 'http://fakeapi.test/error'
+      }
+    }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
+
+    const result = apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    return result.catch(error => {
+      expect(dispatchSpy.callCount).toEqual(2)
+
+      expect(dispatchSpy.firstCall.args).toEqual([{
+        type: 'PENDING'
+      }])
+
+      expect(dispatchSpy.secondCall.args).toEqual([{
+        type: 'FAILURE',
+        payload: error
+      }])
+    })
+  })
+
+  it('ignores non-api actions', function () {
+    const action = {
+      type: 'NON_API_ACTION'
+    }
+    const dispatchSpy = spy()
+    const nextSpy = spy()
+
+    // Invoke middleware with non-api action
+    apiMiddleware({
+      dispatch: dispatchSpy
+    })(nextSpy)(action)
+
+    // Assert next was invoked with action
+    expect(nextSpy.callCount).toEqual(1)
+    expect(nextSpy.firstCall.args).toEqual([{
+      type: 'NON_API_ACTION'
+    }])
+
+    // Assert dispatch was not invoked
+    expect(dispatchSpy.callCount).toEqual(0)
+  })
 })
