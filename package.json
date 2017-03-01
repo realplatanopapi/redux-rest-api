@@ -28,7 +28,7 @@
     "clean": "rm -rf dist",
     "build/watch": "npm run build -- --watch",
     "build": "npm run clean && babel src --out-dir dist --source-maps",
-    "lint": "eslint src test",
+    "lint": "eslint .",
     "mocha": "mocha --recursive --reporter dot test --require babel-register",
     "test": "npm run lint && mocha test",
     "test/watch": "npm run mocha -- --watch",
